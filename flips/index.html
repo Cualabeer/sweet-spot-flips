@@ -3,56 +3,111 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Send Car Photos</title>
+<title>Car Photo Guide & Email Sender</title>
 <style>
   body {
-    font-family: Arial,sans-serif;
+    font-family: Arial, sans-serif;
     margin: 1em;
-    background:#f0f4f8;
-    color:#222;
+    background: #f0f4f8;
+    color: #222;
   }
-  label, button {
+  h2 {
+    color: #005a9c;
+    margin-bottom: 0.2em;
+  }
+  .photo-guide {
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 8px;
+    padding: 1em 1.5em;
+    max-width: 450px;
+    margin-bottom: 1.5em;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+  }
+  .photo-guide h3 {
+    margin-top: 0;
+    color: #0d47a1;
+    font-weight: 600;
+  }
+  .photo-guide ol {
+    padding-left: 1.2em;
+    margin: 0;
+  }
+  .photo-guide ol li {
+    margin-bottom: 0.7em;
+    font-size: 1rem;
+  }
+  label {
+    font-weight: bold;
     display: block;
-    margin: 0.5em 0;
+    margin: 1em 0 0.3em 0;
   }
-  input, button {
+  input[type="email"], input[type="file"] {
     width: 100%;
     padding: 0.5em;
-    font-size: 1em;
+    box-sizing: border-box;
     border-radius: 4px;
-    border:1px solid #ccc;
+    border: 1px solid #ccc;
   }
   button {
-    background:#005a9c;
-    color:#fff;
-    border:none;
-    cursor:pointer;
-    display:none;
+    margin-top: 1.5em;
+    background-color: #005a9c;
+    color: white;
+    padding: 0.7em 1.5em;
+    border: none;
+    font-size: 1em;
+    border-radius: 4px;
+    cursor: pointer;
+    display: none;
   }
   button:disabled {
-    background:#999;
-    cursor:not-allowed;
+    background-color: #999;
+    cursor: not-allowed;
   }
   #status {
     margin-top: 1em;
     font-weight: bold;
+    color: red;
+  }
+  @media (max-width: 500px) {
+    .photo-guide {
+      max-width: 100%;
+    }
   }
 </style>
 </head>
 <body>
 
-<h2>Send Car Photos</h2>
+<h2>Car Photo Guide & Email Sender</h2>
 
-<label for="email">Recipient Email</label>
-<input type="email" id="email" placeholder="Enter recipient email" required />
+<div class="photo-guide" aria-label="Photo guide for selling your car">
+  <h3>Photo Guide - Please take these photos:</h3>
+  <ol>
+    <li>3/4 front exterior (front and side angle)</li>
+    <li>3/4 rear exterior (back and side angle)</li>
+    <li>Side profile</li>
+    <li>Interior front seats</li>
+    <li>Dashboard & controls (TomTom, AC, cruise)</li>
+    <li>Back seats (space for kids/car seats)</li>
+    <li>Boot/trunk space</li>
+    <li>Tyres and wheels close-up</li>
+    <li>Engine bay</li>
+    <li>Special features (LED lights, badges)</li>
+  </ol>
+</div>
 
-<label for="photos">Upload Photos (max 8)</label>
-<input type="file" id="photos" accept="image/*" multiple required />
+<form id="photoForm">
+  <label for="email">Recipient Email</label>
+  <input type="email" id="email" name="email" placeholder="Enter recipient email" required />
 
-<button id="sendBtn">Send Photos</button>
-<div id="status"></div>
+  <label for="photos">Upload Photos (max 8)</label>
+  <input type="file" id="photos" name="photos" accept="image/*" multiple required />
 
-<script src="https://cdn.jsdelivr.net/npm/pica@8.0.0/dist/pica.min.js"></script>
+  <button type="submit" id="sendBtn">Send Photos</button>
+</form>
+
+<div id="status" role="alert" aria-live="polite"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <script>
   emailjs.init('YOUR_EMAILJS_USER_ID');
@@ -61,90 +116,70 @@
   const photosInput = document.getElementById('photos');
   const sendBtn = document.getElementById('sendBtn');
   const statusDiv = document.getElementById('status');
+  const form = document.getElementById('photoForm');
   const MAX_PHOTOS = 8;
-  const MAX_DIM = 1200;
 
-  // Show send button only if valid email entered
   emailInput.addEventListener('input', () => {
-    sendBtn.style.display = emailInput.validity.valid && emailInput.value.trim() ? 'block' : 'none';
+    const validEmail = emailInput.validity.valid && emailInput.value.trim() !== '';
+    sendBtn.style.display = validEmail ? 'inline-block' : 'none';
   });
 
-  async function resizeFile(file) {
-    return new Promise((res, rej) => {
-      const pica = window.pica();
-      const img = new Image();
-      const reader = new FileReader();
-      reader.onload = e => img.src = e.target.result;
-      reader.onerror = () => rej('File read error');
-      reader.readAsDataURL(file);
-
-      img.onload = () => {
-        let w = img.width, h = img.height;
-        if (w > h && w > MAX_DIM) { h = h * (MAX_DIM / w); w = MAX_DIM; }
-        else if (h > w && h > MAX_DIM) { w = w * (MAX_DIM / h); h = MAX_DIM; }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-
-        pica.resize(img, canvas)
-          .then(() => pica.toBlob(canvas, 'image/jpeg', 0.8))
-          .then(blob => {
-            const r2 = new FileReader();
-            r2.onload = () => res({ filename: file.name, content: r2.result.split(',')[1] });
-            r2.onerror = () => rej('Blob read error');
-            r2.readAsDataURL(blob);
-          }).catch(err => rej(err));
-      };
-      img.onerror = () => rej('Image load error');
-    });
-  }
-
-  sendBtn.addEventListener('click', async () => {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
     statusDiv.textContent = '';
     sendBtn.disabled = true;
-    sendBtn.textContent = 'Processing...';
+    sendBtn.textContent = 'Sending...';
 
     const email = emailInput.value.trim();
     const files = photosInput.files;
 
-    if (!email || !files.length) {
-      statusDiv.textContent = 'Enter email and select photos.';
+    if (!email || files.length === 0) {
+      statusDiv.textContent = 'Please enter an email and select at least one photo.';
       sendBtn.disabled = false;
       sendBtn.textContent = 'Send Photos';
       return;
     }
+
     if (files.length > MAX_PHOTOS) {
-      statusDiv.textContent = `Select up to ${MAX_PHOTOS} photos.`;
+      statusDiv.textContent = `Please select up to ${MAX_PHOTOS} photos only.`;
       sendBtn.disabled = false;
       sendBtn.textContent = 'Send Photos';
       return;
     }
 
     try {
-      const attachments = [];
-      for (const file of files) {
-        statusDiv.textContent = `Resizing ${file.name}...`;
-        attachments.push(await resizeFile(file));
-      }
-      statusDiv.textContent = 'Sending...';
+      // Convert files to base64 (no resizing here to keep it quick & simple)
+      const attachments = await Promise.all(Array.from(files).map(file => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve({ filename: file.name, content: reader.result.split(',')[1] });
+          reader.onerror = () => reject('Error reading file ' + file.name);
+          reader.readAsDataURL(file);
+        });
+      }));
 
-      await emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
+      const templateParams = {
         to_email: email,
-        message: `You have received ${attachments.length} photo(s).`,
-        attachments: attachments.map(a => ({ name: a.filename, data: a.content }))
-      });
+        message: `You have received ${attachments.length} photo(s) for the car sale.`,
+        attachments: attachments.map(a => ({
+          name: a.filename,
+          data: a.content
+        }))
+      };
+
+      await emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams);
 
       statusDiv.style.color = 'green';
       statusDiv.textContent = 'Photos sent successfully!';
-      emailInput.value = '';
-      photosInput.value = '';
+      form.reset();
       sendBtn.style.display = 'none';
-    } catch (e) {
+    } catch (error) {
       statusDiv.style.color = 'red';
-      statusDiv.textContent = 'Error: ' + e;
+      statusDiv.textContent = 'Failed to send photos: ' + error;
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send Photos';
     }
-    sendBtn.disabled = false;
-    sendBtn.textContent = 'Send Photos';
   });
 </script>
 
