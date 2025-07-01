@@ -5,137 +5,183 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Car Photo Guide & Email Sender</title>
 <style>
+  /* Reset and base */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
   body {
-    font-family: Arial, sans-serif;
-    margin: 1em;
-    background: #f0f4f8;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9fafb;
+    margin: 0;
+    padding: 2rem 1rem;
     color: #222;
+    display: flex;
+    justify-content: center;
   }
+  main {
+    background: #fff;
+    padding: 2rem 2.5rem;
+    border-radius: 10px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+  }
+
   h2 {
-    color: #005a9c;
-    margin-bottom: 0.2em;
+    font-weight: 700;
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+    color: #1e3a8a; /* Indigo-800 */
+    text-align: center;
   }
+
   .photo-guide {
-    background: #e3f2fd;
-    border: 1px solid #90caf9;
+    background: #e0e7ff; /* Indigo-100 */
     border-radius: 8px;
-    padding: 1em 1.5em;
-    max-width: 450px;
-    margin: 0 0 1.5em 0;
-    box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.75rem;
+    box-shadow: inset 0 0 8px rgb(99 102 241 / 0.3);
   }
   .photo-guide h3 {
-    margin-top: 0;
-    color: #0d47a1;
+    font-size: 1.2rem;
     font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 0.8rem;
+    color: #3730a3; /* Indigo-700 */
   }
   .photo-guide ol {
-    padding-left: 1.2em;
+    padding-left: 1.3rem;
     margin: 0;
+    list-style: decimal inside;
+    color: #1e293b; /* Slate-800 */
+    line-height: 1.4;
   }
   .photo-guide ol li {
-    margin-bottom: 0.7em;
-    font-size: 1rem;
+    margin-bottom: 0.6rem;
   }
+
   label {
-    font-weight: bold;
+    font-weight: 600;
     display: block;
-    margin: 1em 0 0.3em 0;
+    margin: 1.2rem 0 0.4rem;
+    color: #334155; /* Slate-700 */
+    font-size: 1rem;
   }
   input[type="email"], input[type="file"] {
     width: 100%;
-    padding: 0.5em;
-    box-sizing: border-box;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    border: 1.5px solid #cbd5e1; /* Slate-300 */
+    font-size: 1rem;
+    transition: border-color 0.25s ease;
+  }
+  input[type="email"]:focus,
+  input[type="file"]:focus {
+    outline: none;
+    border-color: #6366f1; /* Indigo-500 */
+    box-shadow: 0 0 5px 1px rgb(99 102 241 / 0.5);
   }
 
-  /* The progress bar container will be the button */
+  /* Send button as progress bar container */
   #sendBtn {
     position: relative;
-    margin-top: 1.5em;
+    margin-top: 1.8rem;
     width: 100%;
-    height: 40px;
-    background-color: #ddd;
+    height: 45px;
+    background-color: #e0e7ff; /* Indigo-100 */
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     overflow: hidden;
-    font-size: 1.1em;
-    color: #005a9c;
-    font-weight: 600;
+    font-size: 1.1rem;
+    color: #3730a3; /* Indigo-700 */
+    font-weight: 700;
     user-select: none;
-    transition: background-color 0.3s ease;
-    display: none; /* hidden until inputs valid */
+    transition: background-color 0.3s ease, color 0.3s ease;
+    display: none;
+    box-shadow: 0 2px 8px rgb(99 102 241 / 0.25);
+  }
+  #sendBtn:hover:not(:disabled) {
+    background-color: #4f46e5; /* Indigo-600 */
+    color: white;
   }
   #sendBtn:disabled {
     cursor: not-allowed;
-    color: #999;
+    color: #a1a1aa; /* Gray-400 */
+    background-color: #e0e0e0;
+    box-shadow: none;
   }
 
   #progressFill {
     position: absolute;
     top: 0; left: 0; bottom: 0;
     width: 0%;
-    background-color: #005a9c;
+    background-color: #4f46e5; /* Indigo-600 */
     transition: width 0.3s ease;
     z-index: 0;
-    border-radius: 6px 0 0 6px;
+    border-radius: 8px 0 0 8px;
   }
-
   #sendBtn span {
     position: relative;
     z-index: 1;
   }
 
   #status {
-    margin-top: 1em;
-    font-weight: bold;
-    color: red;
-    max-width: 450px;
+    margin-top: 1rem;
+    font-weight: 600;
+    font-size: 1rem;
+    max-width: 100%;
+    min-height: 1.4rem;
+    text-align: center;
+  }
+  #status.error {
+    color: #dc2626; /* Red-600 */
+  }
+  #status.success {
+    color: #16a34a; /* Green-600 */
   }
 
-  @media (max-width: 500px) {
-    .photo-guide, #status {
-      max-width: 100%;
+  @media (max-width: 520px) {
+    main {
+      padding: 1.5rem 1.5rem;
     }
   }
 </style>
 </head>
 <body>
 
-<h2>Car Photo Guide & Email Sender</h2>
+<main>
+  <h2>Car Photo Guide & Email Sender</h2>
 
-<div class="photo-guide" aria-label="Photo guide for selling your car">
-  <h3>Photo Guide - Please take these photos:</h3>
-  <ol>
-    <li>3/4 front exterior (front and side angle)</li>
-    <li>3/4 rear exterior (back and side angle)</li>
-    <li>Side profile</li>
-    <li>Interior front seats</li>
-    <li>Dashboard & controls (TomTom, AC, cruise)</li>
-    <li>Back seats (space for kids/car seats)</li>
-    <li>Boot/trunk space</li>
-    <li>Tyres and wheels close-up</li>
-    <li>Engine bay</li>
-    <li>Special features (LED lights, badges)</li>
-  </ol>
-</div>
+  <section class="photo-guide" aria-label="Photo guide for selling your car">
+    <h3>Photo Guide - Please take these 8 photos:</h3>
+    <ol>
+      <li>3/4 front exterior (front and side angle)</li>
+      <li>3/4 rear exterior (back and side angle)</li>
+      <li>Side profile</li>
+      <li>Interior front seats</li>
+      <li>Dashboard & controls (TomTom, AC, cruise)</li>
+      <li>Back seats (space for kids/car seats)</li>
+      <li>Boot/trunk space</li>
+      <li>Tyres and wheels close-up</li>
+    </ol>
+  </section>
 
-<form id="photoForm">
-  <label for="email">Recipient Email</label>
-  <input type="email" id="email" name="email" placeholder="Enter recipient email" required />
+  <form id="photoForm" novalidate>
+    <label for="email">Recipient Email</label>
+    <input type="email" id="email" name="email" placeholder="Enter recipient email" required autocomplete="email" />
 
-  <label for="photos">Upload Photos (max 8)</label>
-  <input type="file" id="photos" name="photos" accept="image/*" multiple required />
+    <label for="photos">Upload Photos (exactly 8 required)</label>
+    <input type="file" id="photos" name="photos" accept="image/*" multiple required />
 
-  <button type="submit" id="sendBtn" disabled>
-    <div id="progressFill"></div>
-    <span>Send</span>
-  </button>
-</form>
+    <button type="submit" id="sendBtn" disabled>
+      <div id="progressFill"></div>
+      <span>Send</span>
+    </button>
+  </form>
 
-<div id="status" role="alert" aria-live="polite"></div>
+  <div id="status" role="alert" aria-live="polite"></div>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <script>
@@ -147,40 +193,45 @@
   const progressFill = document.getElementById('progressFill');
   const statusDiv = document.getElementById('status');
   const form = document.getElementById('photoForm');
-  const MAX_PHOTOS = 8;
-
-  // Show and enable send button only when inputs valid
-  function updateSendButton() {
-    const validEmail = emailInput.validity.valid && emailInput.value.trim() !== '';
-    const filesCount = photosInput.files.length;
-    if (filesCount > 0 && filesCount <= MAX_PHOTOS && validEmail) {
-      sendBtn.style.display = 'inline-block';
-      sendBtn.disabled = false;
-    } else {
-      sendBtn.style.display = filesCount > 0 || validEmail ? 'inline-block' : 'none'; // Show disabled if inputs partially filled
-      sendBtn.disabled = true;
-      resetProgress();
-    }
-  }
+  const EXACT_PHOTO_COUNT = 8;
 
   function resetProgress() {
     progressFill.style.width = '0%';
     sendBtn.querySelector('span').textContent = 'Send';
   }
 
+  function updateSendButton() {
+    const validEmail = emailInput.validity.valid && emailInput.value.trim() !== '';
+    const filesCount = photosInput.files.length;
+    const validFilesCount = filesCount === EXACT_PHOTO_COUNT;
+
+    if (validFilesCount && validEmail) {
+      sendBtn.style.display = 'inline-block';
+      sendBtn.disabled = false;
+      statusDiv.textContent = '';
+      statusDiv.className = '';
+    } else {
+      sendBtn.style.display = filesCount > 0 || validEmail ? 'inline-block' : 'none';
+      sendBtn.disabled = true;
+      if (filesCount !== 0 && filesCount !== EXACT_PHOTO_COUNT) {
+        statusDiv.textContent = `Please select exactly ${EXACT_PHOTO_COUNT} photos.`;
+        statusDiv.className = 'error';
+      } else {
+        statusDiv.textContent = '';
+        statusDiv.className = '';
+      }
+    }
+    resetProgress();
+  }
+
   emailInput.addEventListener('input', updateSendButton);
   photosInput.addEventListener('change', () => {
-    if (photosInput.files.length > MAX_PHOTOS) {
-      alert(`You can upload a maximum of ${MAX_PHOTOS} photos only.`);
-      photosInput.value = '';
-    }
     updateSendButton();
   });
 
-  // Animate progress fill
   async function animateProgress(duration = 4000) {
     return new Promise((resolve) => {
-      const steps = 40; // smooth animation
+      const steps = 40;
       const interval = duration / steps;
       let width = 0;
 
@@ -199,22 +250,16 @@
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     statusDiv.textContent = '';
+    statusDiv.className = '';
     sendBtn.disabled = true;
     sendBtn.querySelector('span').textContent = 'Sending...';
 
     const email = emailInput.value.trim();
     const files = photosInput.files;
 
-    if (!email || files.length === 0) {
-      statusDiv.textContent = 'Please enter an email and select at least one photo.';
-      sendBtn.disabled = false;
-      sendBtn.querySelector('span').textContent = 'Send';
-      resetProgress();
-      return;
-    }
-
-    if (files.length > MAX_PHOTOS) {
-      statusDiv.textContent = `Please select up to ${MAX_PHOTOS} photos only.`;
+    if (!email || files.length !== EXACT_PHOTO_COUNT) {
+      statusDiv.textContent = `Please enter a valid email and select exactly ${EXACT_PHOTO_COUNT} photos.`;
+      statusDiv.className = 'error';
       sendBtn.disabled = false;
       sendBtn.querySelector('span').textContent = 'Send';
       resetProgress();
@@ -224,11 +269,12 @@
     try {
       await animateProgress(4000);
 
+      // Convert photos to base64 attachments
       const attachments = await Promise.all(Array.from(files).map(file => {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve({ filename: file.name, content: reader.result.split(',')[1] });
-          reader.onerror = () => reject('Error reading file ' + file.name);
+          reader.onerror = () => reject(`Error reading file ${file.name}`);
           reader.readAsDataURL(file);
         });
       }));
@@ -244,13 +290,15 @@
 
       await emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams);
 
-      statusDiv.style.color = 'green';
+      statusDiv.style.color = '';
+      statusDiv.className = 'success';
       statusDiv.textContent = 'Photos sent successfully!';
       form.reset();
       sendBtn.style.display = 'none';
       resetProgress();
     } catch (error) {
-      statusDiv.style.color = 'red';
+      statusDiv.style.color = '';
+      statusDiv.className = 'error';
       statusDiv.textContent = 'Failed to send photos: ' + error;
       resetProgress();
     } finally {
